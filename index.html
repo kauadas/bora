@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Surpresa</title>
+  <style>
+    body {
+      margin: 0;
+      background: linear-gradient(to top, #dff6e3, #f7fff8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    canvas {
+      background: transparent;
+    }
+
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      background: #5fbf72;
+      color: white;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: transform 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <canvas id="flowerCanvas" width="300" height="400"></canvas>
+    <button id="growBtn">Clique aqui para ter uma surpresa!</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("flowerCanvas");
+    const ctx = canvas.getContext("2d");
+    const button = document.getElementById("growBtn");
+
+    let growth = 0;
+    let animating = false;
+
+    function drawLily(progress) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const baseY = 350;
+
+      
+      const stemHeight = 180 * progress;
+      ctx.beginPath();
+      ctx.moveTo(centerX, baseY);
+      ctx.lineTo(centerX, baseY - stemHeight);
+      ctx.strokeStyle = "#2f8f46";
+      ctx.lineWidth = 6;
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      
+      if (progress > 0.25) {
+        const leafProgress = Math.min((progress - 0.25) / 0.75, 1);
+
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, baseY - 80);
+        ctx.quadraticCurveTo(
+          centerX - 50 * leafProgress,
+          baseY - 120,
+          centerX - 10,
+          baseY - 140
+        );
+        ctx.strokeStyle = "#3aa655";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, baseY - 120);
+        ctx.quadraticCurveTo(
+          centerX + 50 * leafProgress,
+          baseY - 150,
+          centerX + 10,
+          baseY - 180
+        );
+        ctx.stroke();
+      }
+
+      
+      if (progress > 0.6) {
+        const flowerProgress = Math.min((progress - 0.6) / 0.4, 1);
+        const flowerX = centerX;
+        const flowerY = baseY - stemHeight;
+
+        drawPetals(flowerX, flowerY, flowerProgress);
+      }
+    }
+
+    function drawPetals(x, y, progress) {
+      const petalLength = 45 * progress;
+      const petalWidth = 20 * progress;
+
+      ctx.fillStyle = "#f7f7ff";
+      ctx.strokeStyle = "#d6d6ff";
+      ctx.lineWidth = 2;
+
+      const angles = [-60, -25, 0, 25, 60, 90];
+
+      angles.forEach(angle => {
+        drawPetal(x, y, petalLength, petalWidth, angle);
+      });
+
+      
+      ctx.beginPath();
+      ctx.arc(x, y, 6 * progress, 0, Math.PI * 2);
+      ctx.fillStyle = "#f4c542";
+      ctx.fill();
+
+      
+      ctx.strokeStyle = "#c99b1d";
+      for (let i = -2; i <= 2; i++) {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + i * 6, y - 20 * progress);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(x + i * 6, y - 20 * progress, 2.5 * progress, 0, Math.PI * 2);
+        ctx.fillStyle = "#d88f00";
+        ctx.fill();
+      }
+    }
+
+    function drawPetal(x, y, length, width, angleDeg) {
+      const angle = angleDeg * Math.PI / 180;
+
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(
+        -width, -length * 0.3,
+        -width, -length * 0.8,
+        0, -length
+      );
+      ctx.bezierCurveTo(
+        width, -length * 0.8,
+        width, -length * 0.3,
+        0, 0
+      );
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function animateGrowth() {
+      if (animating) return;
+      animating = true;
+      growth = 0;
+
+      function frame() {
+        growth += 0.015;
+        if (growth > 1) growth = 1;
+
+        drawLily(growth);
+
+        if (growth < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          animating = false;
+        }
+      }
+
+      frame();
+    }
+
+    button.addEventListener("click", animateGrowth);
+
+    
+    drawLily(0);
+  </script>
+</body>
+</html>
